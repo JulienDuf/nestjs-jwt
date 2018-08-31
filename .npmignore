@@ -60,6 +60,6 @@ fabric.properties
 !.vscode/extensions.json
 
 .idea/
-!dist/
-lib/
+*.ts
+!*.d.ts
 tsconfig.json

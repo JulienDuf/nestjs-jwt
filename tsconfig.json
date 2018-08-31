@@ -10,12 +10,11 @@
     "experimentalDecorators": true,
     "target": "es6",
     "sourceMap": true,
-    "allowJs": true,
-    "outDir": "./dist",
-    "baseUrl": "./liv"
+    "allowJs": true
   },
   "include": [
-    "lib/**/*"
+    "lib/**/*",
+    "index.ts"
   ],
   "exclude": [
     "node_modules"

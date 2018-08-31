@@ -1,6 +1,6 @@
 import * as express from 'express';
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '..';
+import { JwtService } from '../services/jwt.service';
 import { Reflector } from '@nestjs/core';
 
 @Injectable()
