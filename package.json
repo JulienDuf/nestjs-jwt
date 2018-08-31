@@ -1,0 +1,28 @@
+{
+  "name": "nestjs-jwt",
+  "version": "1.0.0-beta",
+  "description": "Jwt utils for nestjs",
+  "author": "Julien Dufresne",
+  "license": "MIT",
+  "scripts": {
+    "compile": "tsc -p tsconfig.json",
+    "compile:lib": "tsc -p tsconfig.lib.json",
+    "publish-package": "npm run compile:lib && npm publish --access public"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^5.2.2",
+    "@nestjs/core": "^5.2.2",
+    "reflect-metadata": "^0.1.12",
+    "rxjs": "^6.0.0"
+  },
+  "devDependencies": {
+    "@nestjs/common": "^5.2.2",
+    "@nestjs/core": "^5.2.2",
+    "@types/express": "^4.0.39",
+    "@types/node": "^9.3.0",
+    "reflect-metadata": "^0.1.12",
+    "rxjs": "^6.0.0",
+    "tslint": "5.3.2",
+    "typescript": "^2.7.0"
+  }
+}
