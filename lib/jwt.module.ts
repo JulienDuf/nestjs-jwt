@@ -5,6 +5,9 @@ import { JwtService } from './services/jwt.service';
     providers: [
         JwtService,
     ],
+    exports: [
+        JwtService,
+    ],
 })
 export class JwtModule {
 }

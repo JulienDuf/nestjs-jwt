@@ -1,6 +1,6 @@
 {
-  "name": "nestjs-jwt",
-  "version": "1.0.0-beta",
+  "name": "nestjs-jwt2",
+  "version": "1.0.2-beta",
   "description": "Jwt utils for nestjs",
   "author": "Julien Dufresne",
   "license": "MIT",

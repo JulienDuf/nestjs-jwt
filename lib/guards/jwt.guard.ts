@@ -16,15 +16,20 @@ export class JwtGuard implements CanActivate{
         }
 
         const req = context.switchToHttp().getRequest<express.Request>();
-        const tokenHeader = req.header('Authorization').split(' ');
-        if (tokenHeader.length !== 2) {
+        const tokenHeader = req.header('Authorization');
+        if (!tokenHeader) {
+            throw new UnauthorizedException();
+        }
+
+        const tokens = tokenHeader.split(' ');
+        if (tokens.length !== 2) {
             throw new UnauthorizedException();
         }
 
         try {
-            await this.jwtService.validateToken(tokenHeader[1]);
+            await this.jwtService.validateToken(tokens[1]);
 
-            const claims = await this.jwtService.decodeToken(tokenHeader[1]);
+            const claims = await this.jwtService.decodeToken(tokens[1]);
             for (const property in claims) {
                 if (claims.hasOwnProperty(property)) {
                     req.headers[`token-claim-${property}`] = claims[property];
