@@ -5,12 +5,23 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class JwtService {
     private readonly cert: Buffer;
+    private readonly audiences: string[];
+    private readonly issuers: string[];
 
     constructor() {
         const certPath = process.env.JWT_PUBLIC_KEY;
         if (!certPath) {
             throw new Error('You must provide JWT_PUBLIC_KEY environment variable');
         }
+        if (!process.env.JWT_AUDIENCES) {
+            throw new Error('You must provide JWT_AUDIENCES environment variable');
+        }
+        if (!process.env.JWT_ISSUER) {
+            throw new Error('You must provide JWT_ISSUER environment variable');
+        }
+
+        this.audiences = process.env.JWT_AUDIENCES.split(' ');
+        this.issuers = process.env.JWT_ISSUER.split(' ');
 
         try {
             this.cert = fs.readFileSync(certPath);
@@ -21,7 +32,10 @@ export class JwtService {
 
     public validateToken(token: string): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
-            jwt.verify(token, this.cert, err => {
+            jwt.verify(token, this.cert, {
+                audience: this.audiences,
+                issuer: this.issuers
+            }, err => {
                 if (err) {
                     reject();
                 }
