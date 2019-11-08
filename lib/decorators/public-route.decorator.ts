@@ -1,3 +1,3 @@
-import { ReflectMetadata } from '@nestjs/common';
+import { SetMetadata } from '@nestjs/common';
 
-export const PublicRoute = () => ReflectMetadata('public-route', true);
+export const PublicRoute = () => SetMetadata('public-route', true);

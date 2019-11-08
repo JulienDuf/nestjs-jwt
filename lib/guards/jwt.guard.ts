@@ -36,7 +36,7 @@ export class JwtGuard implements CanActivate{
                 }
             }
         } catch (e) {
-            throw new UnauthorizedException();
+            throw new UnauthorizedException('', e.message);
         }
 
         return true;

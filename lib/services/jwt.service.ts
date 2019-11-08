@@ -1,17 +1,21 @@
+import { JwtHeader, SigningKeyCallback } from 'jsonwebtoken';
 import * as jwt from 'jsonwebtoken';
+import * as jwksClient from 'jwks-rsa';
 import * as fs from 'fs';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class JwtService {
+    private readonly client: jwksClient.JwksClient;
     private readonly cert: Buffer;
     private readonly audiences: string[];
     private readonly issuers: string[];
 
     constructor() {
         const certPath = process.env.JWT_PUBLIC_KEY;
-        if (!certPath) {
-            throw new Error('You must provide JWT_PUBLIC_KEY environment variable');
+        const jwksUri = process.env.JWKS_URI;
+        if (!certPath && !jwksUri) {
+            throw new Error('You must provide JWT_PUBLIC_KEY or JWKS_URI environment variable');
         }
         if (!process.env.JWT_AUDIENCES) {
             throw new Error('You must provide JWT_AUDIENCES environment variable');
@@ -24,20 +28,30 @@ export class JwtService {
         this.issuers = process.env.JWT_ISSUER.split(' ');
 
         try {
-            this.cert = fs.readFileSync(certPath);
+            if (certPath) {
+                this.cert = fs.readFileSync(certPath);
+            } else {
+                this.client = jwksClient({
+                    jwksUri,
+                    cache: true,
+                    rateLimit: true,
+                    jwksRequestsPerMinute: 10,
+                });
+            }
         } catch (e) {
             throw new Error('No public key found');
         }
     }
 
     public validateToken(token: string): Promise<boolean> {
+        const certOrGetKey = this.cert ? this.cert : this.getKey.bind(this);
         return new Promise<boolean>((resolve, reject) => {
-            jwt.verify(token, this.cert, {
+            jwt.verify(token, certOrGetKey, {
                 audience: this.audiences,
-                issuer: this.issuers
+                issuer: this.issuers,
             }, err => {
                 if (err) {
-                    reject();
+                    reject(err);
                 }
 
                 resolve(true);
@@ -49,5 +63,18 @@ export class JwtService {
         return jwt.decode(token, {
             json: true,
         }) as object;
+    }
+
+    private getKey(header: JwtHeader, callback: SigningKeyCallback) {
+        this.client.getSigningKey(header.kid, ((err, key) => {
+            if (err) {
+                return callback(err, null);
+            }
+
+            const signingKey =
+                (key as jwksClient.CertSigningKey).publicKey ||
+                (key as jwksClient.RsaSigningKey).rsaPublicKey;
+            callback(null, signingKey);
+        }));
     }
 }
