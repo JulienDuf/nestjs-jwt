@@ -21,7 +21,7 @@ export class JwtService {
             throw new Error('You must provide JWT_ISSUER environment variable');
         }
 
-        this.audiences = process.env.JWT_AUDIENCES.split(' ');
+        this.audiences = process.env.JWT_AUDIENCES?.split(' ') ?? [];
         this.issuers = process.env.JWT_ISSUER.split(' ');
 
         try {
@@ -44,7 +44,7 @@ export class JwtService {
         const certOrGetKey = this.cert ? this.cert : this.getKey.bind(this);
         return new Promise<boolean>((resolve, reject) => {
             jwt.verify(token, certOrGetKey, {
-                audience: this.audiences || [],
+                audience: this.audiences,
                 issuer: this.issuers,
             }, err => {
                 if (err) {
