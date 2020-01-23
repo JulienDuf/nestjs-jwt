@@ -8,7 +8,7 @@ import { Injectable } from '@nestjs/common';
 export class JwtService {
     private readonly client: jwksClient.JwksClient;
     private readonly cert: Buffer;
-    private readonly audiences: string[];
+    private readonly audiences?: string[];
     private readonly issuers: string[];
 
     constructor() {
@@ -16,9 +16,6 @@ export class JwtService {
         const jwksUri = process.env.JWKS_URI;
         if (!certPath && !jwksUri) {
             throw new Error('You must provide JWT_PUBLIC_KEY or JWKS_URI environment variable');
-        }
-        if (!process.env.JWT_AUDIENCES) {
-            throw new Error('You must provide JWT_AUDIENCES environment variable');
         }
         if (!process.env.JWT_ISSUER) {
             throw new Error('You must provide JWT_ISSUER environment variable');
@@ -28,15 +25,15 @@ export class JwtService {
         this.issuers = process.env.JWT_ISSUER.split(' ');
 
         try {
-            if (certPath) {
-                this.cert = fs.readFileSync(certPath);
-            } else {
+            if (jwksUri) {
                 this.client = jwksClient({
                     jwksUri,
                     cache: true,
                     rateLimit: true,
                     jwksRequestsPerMinute: 10,
                 });
+            } else {
+                this.cert = fs.readFileSync(certPath);
             }
         } catch (e) {
             throw new Error('No public key found');
@@ -47,7 +44,7 @@ export class JwtService {
         const certOrGetKey = this.cert ? this.cert : this.getKey.bind(this);
         return new Promise<boolean>((resolve, reject) => {
             jwt.verify(token, certOrGetKey, {
-                audience: this.audiences,
+                audience: this.audiences || [],
                 issuer: this.issuers,
             }, err => {
                 if (err) {

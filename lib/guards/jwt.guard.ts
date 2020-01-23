@@ -18,12 +18,12 @@ export class JwtGuard implements CanActivate{
         const req = context.switchToHttp().getRequest<express.Request>();
         const tokenHeader = req.header('Authorization');
         if (!tokenHeader) {
-            throw new UnauthorizedException();
+            throw new UnauthorizedException('No token provided');
         }
 
         const tokens = tokenHeader.split(' ');
         if (tokens.length !== 2) {
-            throw new UnauthorizedException();
+            throw new UnauthorizedException('No token found');
         }
 
         try {
