@@ -21,7 +21,7 @@ export class JwtService {
             throw new Error('You must provide JWT_ISSUER environment variable');
         }
 
-        this.audiences = process.env.JWT_AUDIENCES?.split(' ') ?? [];
+        this.audiences = process.env.JWT_AUDIENCES?.split(' ');
         this.issuers = process.env.JWT_ISSUER.split(' ');
 
         try {
