@@ -1,11 +1,14 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import * as express from 'express';
 import { JwtService } from '../services/jwt.service';
+import { JWT_CONFIG } from '../constant';
+import { JwtConfigModel } from '../models/config.model';
 
 @Injectable()
 export class JwtGuard implements CanActivate{
-    constructor(private readonly reflector: Reflector,
+    constructor(@Inject(JWT_CONFIG) private readonly config: JwtConfigModel,
+                private readonly reflector: Reflector,
                 private readonly jwtService: JwtService) {
     }
 
@@ -16,6 +19,10 @@ export class JwtGuard implements CanActivate{
         }
 
         const req = context.switchToHttp().getRequest<express.Request>();
+        if (this.isRouteWhitelisted(req)) {
+            return true;
+        }
+
         const tokenHeader = req.header('Authorization');
         if (!tokenHeader) {
             throw new UnauthorizedException('No token provided');
@@ -40,5 +47,9 @@ export class JwtGuard implements CanActivate{
         }
 
         return true;
+    }
+
+    private isRouteWhitelisted(req: express.Request): boolean {
+        return this.config?.whitelist?.controllers?.some(x => req.url.startsWith(x));
     }
 }
