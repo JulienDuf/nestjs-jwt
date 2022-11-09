@@ -1,8 +1,13 @@
-import { JwtHeader, SigningKeyCallback } from 'jsonwebtoken';
+import { GetPublicKeyOrSecret, JwtHeader, Secret, SigningKeyCallback } from 'jsonwebtoken';
 import * as jwt from 'jsonwebtoken';
 import * as jwksClient from 'jwks-rsa';
 import * as fs from 'fs';
 import { Injectable } from '@nestjs/common';
+
+export class ValidateTokenOptions {
+    issuers: string[];
+    cert: Buffer;
+}
 
 @Injectable()
 export class JwtService {
@@ -30,7 +35,7 @@ export class JwtService {
                     jwksUri,
                     cache: true,
                     rateLimit: true,
-                    jwksRequestsPerMinute: 10,
+                    jwksRequestsPerMinute: 10
                 });
             } else {
                 this.cert = fs.readFileSync(certPath);
@@ -40,12 +45,12 @@ export class JwtService {
         }
     }
 
-    public validateToken(token: string): Promise<boolean> {
-        const certOrGetKey = this.cert ? this.cert : this.getKey.bind(this);
+    public validateToken(token: string, options?: ValidateTokenOptions): Promise<boolean> {
+        const certOrGetKey = this.getCertOrKey(options);
         return new Promise<boolean>((resolve, reject) => {
             jwt.verify(token, certOrGetKey, {
                 audience: this.audiences,
-                issuer: this.issuers,
+                issuer: options?.issuers ?? this.issuers
             }, err => {
                 if (err) {
                     reject(err);
@@ -58,7 +63,7 @@ export class JwtService {
 
     public async decodeToken(token: string): Promise<object> {
         return jwt.decode(token, {
-            json: true,
+            json: true
         }) as object;
     }
 
@@ -73,5 +78,12 @@ export class JwtService {
                 (key as jwksClient.RsaSigningKey).rsaPublicKey;
             callback(null, signingKey);
         }));
+    }
+
+    private getCertOrKey(options?: ValidateTokenOptions): Secret | GetPublicKeyOrSecret {
+        if (this.cert || options?.cert) {
+            return options?.cert ?? this.cert;
+        }
+        return this.getKey.bind(this);
     }
 }
