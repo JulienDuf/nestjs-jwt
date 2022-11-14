@@ -5,8 +5,8 @@ import * as fs from 'fs';
 import { Injectable } from '@nestjs/common';
 
 export class ValidateTokenOptions {
-    issuers: string[];
-    cert: Buffer;
+    issuers?: string[];
+    cert?: Buffer;
 }
 
 @Injectable()
