@@ -7,29 +7,32 @@ import { JwtConfigModel } from '../models/config.model';
 
 @Injectable()
 export class JwtGuard implements CanActivate{
-    constructor(@Inject(JWT_CONFIG) private readonly config: JwtConfigModel,
-                private readonly reflector: Reflector,
-                private readonly jwtService: JwtService) {
-    }
+    constructor(
+        @Inject(JWT_CONFIG) private readonly config: JwtConfigModel,
+        private readonly reflector: Reflector,
+        private readonly jwtService: JwtService
+    ) {}
 
     public async canActivate(context: ExecutionContext): Promise<boolean> {
         const publicRoute = this.reflector.get<boolean>('public-route', context.getHandler());
-        if (publicRoute) {
-            return true;
-        }
-
         const req = context.switchToHttp().getRequest<express.Request>();
-        if (this.isRouteWhitelisted(req)) {
-            return true;
-        }
+        const routeWhitelisted = this.isRouteWhitelisted(req);
 
         const tokenHeader = req.header('Authorization');
         if (!tokenHeader) {
+            if (publicRoute || routeWhitelisted) {
+                return true;
+            }
+
             throw new UnauthorizedException('No token provided');
         }
 
         const tokens = tokenHeader.split(' ');
         if (tokens.length !== 2) {
+            if (publicRoute || routeWhitelisted) {
+                return true;
+            }
+
             throw new UnauthorizedException('No token found');
         }
 
@@ -43,6 +46,10 @@ export class JwtGuard implements CanActivate{
                 }
             }
         } catch (e) {
+            if (publicRoute || routeWhitelisted) {
+                return true;
+            }
+
             throw new UnauthorizedException('', e.message);
         }
 
