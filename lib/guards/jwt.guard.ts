@@ -50,13 +50,13 @@ export class JwtGuard implements CanActivate{
                 return true;
             }
 
-            throw new UnauthorizedException('', e.message);
+            throw new UnauthorizedException('', (e as Error).message);
         }
 
         return true;
     }
 
     private isRouteWhitelisted(req: express.Request): boolean {
-        return this.config?.whitelist?.controllers?.some(x => req.url.startsWith(x));
+        return this.config?.whitelist?.controllers?.some(x => req.url.startsWith(x)) ?? false;
     }
 }

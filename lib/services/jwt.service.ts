@@ -11,8 +11,8 @@ export class ValidateTokenOptions {
 
 @Injectable()
 export class JwtService {
-    private readonly client: jwksClient.JwksClient;
-    private readonly cert: Buffer;
+    private readonly client!: jwksClient.JwksClient;
+    private readonly cert!: Buffer;
     private readonly audiences?: string[];
     private readonly issuers: string[];
 
@@ -37,11 +37,15 @@ export class JwtService {
                     rateLimit: true,
                     jwksRequestsPerMinute: 10
                 });
-            } else {
+            } else if (certPath) {
                 this.cert = fs.readFileSync(certPath);
             }
         } catch (e) {
             throw new Error('No public key found');
+        }
+
+        if (!this.cert) {
+            throw new Error('No public to load');
         }
     }
 
@@ -70,7 +74,7 @@ export class JwtService {
     private getKey(header: JwtHeader, callback: SigningKeyCallback) {
         this.client.getSigningKey(header.kid, ((err, key) => {
             if (err) {
-                return callback(err, null);
+                return callback(err);
             }
 
             const signingKey =
