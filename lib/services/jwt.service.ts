@@ -11,8 +11,8 @@ export class ValidateTokenOptions {
 
 @Injectable()
 export class JwtService {
-    private readonly client!: jwksClient.JwksClient;
-    private readonly cert!: Buffer;
+    private readonly client?: jwksClient.JwksClient;
+    private readonly cert?: Buffer;
     private readonly audiences?: string[];
     private readonly issuers: string[];
 
@@ -44,7 +44,7 @@ export class JwtService {
             throw new Error('No public key found');
         }
 
-        if (!this.cert) {
+        if (!this.cert && !this.client) {
             throw new Error('No public to load');
         }
     }
@@ -72,7 +72,7 @@ export class JwtService {
     }
 
     private getKey(header: JwtHeader, callback: SigningKeyCallback) {
-        this.client.getSigningKey(header.kid, ((err, key) => {
+        this.client?.getSigningKey(header.kid, ((err, key) => {
             if (err) {
                 return callback(err);
             }
@@ -85,9 +85,10 @@ export class JwtService {
     }
 
     private getCertOrKey(options?: ValidateTokenOptions): Secret | GetPublicKeyOrSecret {
-        if (this.cert || options?.cert) {
-            return options?.cert ?? this.cert;
+        if (options?.cert) {
+            return options.cert;
         }
-        return this.getKey.bind(this);
+
+        return this.cert ?? this.getKey.bind(this);
     }
 }

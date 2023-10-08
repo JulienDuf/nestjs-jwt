@@ -1,6 +1,6 @@
 {
   "name": "nestjs-jwt2",
-  "version": "10.0.0",
+  "version": "10.0.1",
   "description": "Jwt utils for nestjs",
   "author": "Julien Dufresne",
   "license": "MIT",
