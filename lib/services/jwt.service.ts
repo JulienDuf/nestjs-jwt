@@ -53,11 +53,12 @@ export class JwtService {
         const certOrGetKey = this.getCertOrKey(options);
         return new Promise<boolean>((resolve, reject) => {
             jwt.verify(token, certOrGetKey, {
-                audience: this.audiences,
-                issuer: options?.issuers ?? this.issuers
+                audience: (this.audiences ?? []) as [string, ...string[]],
+                issuer: (options?.issuers ?? this.issuers ?? []) as [string, ...string[]],
             }, err => {
                 if (err) {
                     reject(err);
+                    return;
                 }
 
                 resolve(true);
